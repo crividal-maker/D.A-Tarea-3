@@ -1,0 +1,10 @@
+.vscode/
+
+build/
+db/
+obj/
+mediciones/
+plots/datos_busquedas
+plots/datos_umbral
+plots/merge_quick_casos
+plots/graficas
