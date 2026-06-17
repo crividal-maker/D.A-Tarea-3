@@ -11,6 +11,7 @@ typedef struct {
     char equipo[MAX_LONGITUD_EQUIPO];
     float puntaje;
     int competencias;
+    int costo;
 } Deportista;
 
 // Prototipos de funciones

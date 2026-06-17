@@ -72,6 +72,9 @@ Deportista generar_deportista() {
     // Generar cantidad de competencias jugadas (ejemplo: entre 1 y 40)
     nuevo_deportista.competencias = (rand() % 40) + 1;
 
+    // Generar costo aleatorio (entre 1 y 100)
+    nuevo_deportista.costo = (rand() % 100) + 1;
+
     return nuevo_deportista;
 }
 
@@ -92,6 +95,9 @@ Deportista generar_deportista_con_id_especifico(int id) {
     
     // Generar cantidad de competencias jugadas (ejemplo: entre 1 y 40)
     nuevo_deportista.competencias = (rand() % 40) + 1;
+
+    // Generar costo aleatorio (entre 1 y 100)
+    nuevo_deportista.costo = (rand() % 100) + 1;
 
     return nuevo_deportista;
 }
@@ -131,11 +137,18 @@ void guardar_deportistas_csv(Deportista *arreglo, int cantidad, const char *nomb
     }
     
     // Escribir cabecera
-    fprintf(archivo, "ID,Nombre,Equipo,Puntaje,Competencias\n");
+    fprintf(archivo, "ID,Nombre,Equipo,Puntaje,Competencias,Costo\n");
     
     // Escribir los registros
     for (int i = 0; i < cantidad; i++) {
-        fprintf(archivo, "%d,%s,%s,%.1f,%d\n", arreglo[i].id, arreglo[i].nombre, arreglo[i].equipo, arreglo[i].puntaje, arreglo[i].competencias);
+        fprintf(archivo, "%d,%s,%s,%.1f,%d,%d\n", 
+            arreglo[i].id,
+            arreglo[i].nombre,
+            arreglo[i].equipo,
+            arreglo[i].puntaje,
+            arreglo[i].competencias,
+            arreglo[i].costo
+        );
     }
     
     fclose(archivo);
@@ -160,7 +173,14 @@ int leer_deportistas_csv(Deportista *arreglo, int cantidad_maxima, const char *n
     
     // Leer línea por línea hasta terminar el archivo o llegar al límite
     while (fgets(linea, sizeof(linea), archivo) != NULL && contador < cantidad_maxima) {
-        sscanf(linea, "%d,%[^,],%[^,],%f,%d", &arreglo[contador].id, arreglo[contador].nombre, arreglo[contador].equipo, &arreglo[contador].puntaje, &arreglo[contador].competencias);
+        sscanf(linea, "%d,%[^,],%[^,],%f,%d,%d",
+            &arreglo[contador].id,
+            arreglo[contador].nombre,
+            arreglo[contador].equipo,
+            &arreglo[contador].puntaje,
+            &arreglo[contador].competencias,
+            &arreglo[contador].costo
+        );
         contador++;
     }
     
@@ -169,6 +189,6 @@ int leer_deportistas_csv(Deportista *arreglo, int cantidad_maxima, const char *n
 }
 
 void imprimir_deportista(Deportista d) {
-    printf("ID: %-3d | Nombre: %-12s | Equipo: %-18s | Puntaje: %6.1f | Competencias: %d\n", 
-           d.id, d.nombre, d.equipo, d.puntaje, d.competencias);
+    printf("ID: %-3d | Nombre: %-12s | Equipo: %-18s | Puntaje: %6.1f | Competencias: %6.1d | Costo: %d\n", 
+        d.id, d.nombre, d.equipo, d.puntaje, d.competencias, d.costo);
 }

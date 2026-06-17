@@ -10,8 +10,8 @@
 #include "quicksort.h"
 #include "medicion.h"
 
-#define MAX_DEPORTISTAS 50000
-#define CANTIDAD_GENERAR 50000
+#define MAX_DEPORTISTAS 5000
+#define CANTIDAD_GENERAR 5000
 #define ARCHIVO_DATOS "db/datos.csv"
 
 // variables globales para tiempos
@@ -176,7 +176,7 @@ int main() {
                                 guardar_tiempo("db/merge/merge_insertion.csv",cantidad_actual,tiempo_gastado);
                             }
                         
-                         ;break;
+                        ;break;
                         case 6: 
                             switch(p_opcion_temp_tiempos){
                             case 1:
@@ -291,7 +291,7 @@ int main() {
 
                     clock_t inicio_tiempo_5 = clock();
                     for(int i = 0; i<cantidad_actual/50; i++){
-                       indice_encontrado = busqueda_exponencial(arreglo, cantidad_actual, id_buscar);
+                        indice_encontrado = busqueda_exponencial(arreglo, cantidad_actual, id_buscar);
                     }
                     clock_t fin_tiempo_5 = clock();
                         
