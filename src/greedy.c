@@ -79,7 +79,71 @@ ResultadoGreedy greedy_mayor_ratio(Deportista *arreglo, int n, int w) {
 // =====================================================================
 // MENOR COSTO PRIMERO (Cristóbal)
 // =====================================================================
-//...
+//
+// Idea: ordenar a todos los deportistas por costo ascendente y tomarlos
+// en ese orden mientras no se supere el presupuesto W.
+//
+// Esto maximiza la CANTIDAD de deportistas que entran al equipo, pero NO
+// necesariamente el puntaje total -> en el informe hay que mostrar un
+// contraejemplo donde este criterio NO es optimo (ej: tomar 3 baratos y
+// malos deja el mismo presupuesto que tomar 1 caro y muy bueno con mas
+// puntaje total).
+//
+// Complejidad:
+//   Tiempo:  O(n log n)  -> dominado por qsort
+//   Espacio: O(n)        -> arreglo auxiliar de indices para ordenar
+
+typedef struct {
+    int indice;
+    int costo;
+    float puntaje;
+} ItemAuxiliarCosto;
+
+static int comparar_por_costo(const void *a, const void *b) {
+    const ItemAuxiliarCosto *ia = (const ItemAuxiliarCosto *)a;
+    const ItemAuxiliarCosto *ib = (const ItemAuxiliarCosto *)b;
+
+    if (ia->costo != ib->costo) {
+        return ia->costo - ib->costo;
+    }
+    // Empate en costo -> desempata por mayor puntaje (no cambia el criterio,
+    // solo mejora la calidad de la solucion en caso de empate)
+    if (ia->puntaje < ib->puntaje) return 1;
+    if (ia->puntaje > ib->puntaje) return -1;
+    return 0;
+}
+
+ResultadoGreedy greedy_menor_costo(Deportista *arreglo, int n, int w) {
+    ResultadoGreedy resultado;
+    resultado.puntaje_total = 0.0f;
+    resultado.costo_total = 0;
+    resultado.cantidad = 0;
+    resultado.indices = malloc(n * sizeof(int));
+
+    ItemAuxiliarCosto *items = malloc(n * sizeof(ItemAuxiliarCosto));
+    for (int i = 0; i < n; i++) {
+        items[i].indice = i;
+        items[i].costo = arreglo[i].costo;
+        items[i].puntaje = arreglo[i].puntaje;
+    }
+
+    qsort(items, n, sizeof(ItemAuxiliarCosto), comparar_por_costo);
+
+    int presupuesto_restante = w;
+    for (int i = 0; i < n; i++) {
+        if (items[i].costo <= presupuesto_restante) {
+            int idx = items[i].indice;
+            resultado.indices[resultado.cantidad++] = idx;
+            resultado.puntaje_total += arreglo[idx].puntaje;
+            resultado.costo_total += arreglo[idx].costo;
+            presupuesto_restante -= items[i].costo;
+        }
+        // Si no entra, se descarta (greedy no vuelve atras)
+    }
+
+    free(items);
+    return resultado;
+}
 
 // =====================================================================
 // SIN RESTRICCIÓN: K MEJORES (Guillermo)
