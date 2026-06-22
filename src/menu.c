@@ -11,6 +11,7 @@ void mostrar_menu() {
     printf("6. Mostrar ranking (Mejores N deportistas)\n");
     printf("7. Medicion de tiempos de Ordenamientos\n");
     printf("8. Buscar k-esimo mejor deportista (SQuickselect)\n");
+    printf("9. Conformar equipo optimo (Programacion Dinamica - Memoizacion)\n");
     printf("0. Salir\n");
     printf("\n\033[0;32m====================================\033[0m\n");
     printf("Seleccione una opcion: ");

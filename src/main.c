@@ -9,9 +9,10 @@
 #include "merge.h"
 #include "quicksort.h"
 #include "medicion.h"
+#include "pd.h"
 
-#define MAX_DEPORTISTAS 5000
-#define CANTIDAD_GENERAR 5000
+#define MAX_DEPORTISTAS 50
+#define CANTIDAD_GENERAR 50
 #define ARCHIVO_DATOS "db/datos.csv"
 
 // variables globales para tiempos
@@ -357,6 +358,40 @@ int main() {
                     printf("Posicion k invalida. Debe ser entre 1 y %d.\n", cantidad_actual);
                 }
                 break;
+
+            case 9: {
+                if (cantidad_actual == 0) {
+                    printf("No hay datos cargados.\n");
+                    break;
+                }
+
+                int presupuesto, k_equipo;
+                printf("Ingrese el presupuesto maximo (W): ");
+                scanf("%d", &presupuesto);
+                printf("Ingrese la cantidad exacta de deportistas (K): ");
+                scanf("%d", &k_equipo);
+
+                if (presupuesto <= 0 || k_equipo <= 0 || k_equipo > cantidad_actual) {
+                    printf("Parametros invalidos.\n");
+                    break;
+                }
+
+                printf("\n[!] Ejecutando PD Memoizacion (n=%d, W=%d, K=%d)...\n",
+                    cantidad_actual, presupuesto, k_equipo);
+
+                clock_t ini = clock();
+                ResultadoPD resultado = pd_memoizacion(arreglo, cantidad_actual,
+                                                        presupuesto, k_equipo);
+                clock_t fin = clock();
+                double tiempo = (double)(fin - ini) / CLOCKS_PER_SEC;
+
+                imprimir_resultado_pd(&resultado, arreglo);
+                printf("Tiempo de ejecucion: %f segundos\n", tiempo);
+
+                liberar_resultado_pd(&resultado);
+                break;
+            }
+            
             case 0:
                 printf("Saliendo...\n");
                 break;
