@@ -10,7 +10,7 @@
 #include "quicksort.h"
 #include "medicion.h"
 #include "pd.h"
-// #include "greedy.h" -> solo para comprobar de funcionamiento de Conformar equipo (Greedy - Mayor ratio puntaje/costo)
+#include "greedy.h"
 
 #define MAX_DEPORTISTAS 50
 #define CANTIDAD_GENERAR 50
@@ -393,34 +393,26 @@ int main() {
                 break;
             }
 
-            /* Comprobacion de funcionamiento de -> Conformar equipo (Greedy - Mayor ratio puntaje/costo)
             case 10: {
                 if (cantidad_actual == 0) {
                     printf("No hay datos cargados.\n");
                     break;
                 }
-
                 int presupuesto;
                 printf("Ingrese el presupuesto maximo (W): ");
                 scanf("%d", &presupuesto);
 
-                if (presupuesto <= 0) {
-                    printf("Presupuesto invalido.\n");
-                    break;
-                }
-
                 clock_t ini = clock();
-                ResultadoGreedy resultado = greedy_mayor_ratio(arreglo, cantidad_actual, presupuesto);
+                ResultadoGreedy resultado = greedy_menor_costo(arreglo, cantidad_actual, presupuesto);
                 clock_t fin = clock();
                 double tiempo = (double)(fin - ini) / CLOCKS_PER_SEC;
 
-                imprimir_resultado_greedy(&resultado, arreglo, "Mayor ratio puntaje/costo");
+                imprimir_resultado_greedy(&resultado, arreglo, "Menor costo primero");
                 printf("Tiempo de ejecucion: %f segundos\n", tiempo);
 
                 liberar_resultado_greedy(&resultado);
                 break;
-            } 
-            */
+            }
             
             case 0:
                 printf("Saliendo...\n");
