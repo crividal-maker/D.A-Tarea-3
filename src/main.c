@@ -386,7 +386,7 @@ int main() {
                 clock_t fin = clock();
                 double tiempo = (double)(fin - ini) / CLOCKS_PER_SEC;
 
-                imprimir_resultado_pd(&resultado, arreglo);
+                imprimir_resultado_pd(&resultado, arreglo, "Memoizacion (Top-Down)");
                 printf("Tiempo de ejecucion: %f segundos\n", tiempo);
 
                 liberar_resultado_pd(&resultado);
@@ -394,6 +394,39 @@ int main() {
             }
 
             case 10: {
+                if (cantidad_actual == 0) {
+                    printf("No hay datos cargados.\n");
+                    break;
+                }
+
+                int presupuesto, k_equipo;
+                printf("Ingrese el presupuesto maximo (W): ");
+                scanf("%d", &presupuesto);
+                printf("Ingrese la cantidad exacta de deportistas (K): ");
+                scanf("%d", &k_equipo);
+
+                if (presupuesto <= 0 || k_equipo <= 0 || k_equipo > cantidad_actual) {
+                    printf("Parametros invalidos.\n");
+                    break;
+                }
+
+                printf("\n[!] Ejecutando PD Tabulacion (n=%d, W=%d, K=%d)...\n",
+                    cantidad_actual, presupuesto, k_equipo);
+
+                clock_t ini = clock();
+                // AQUÍ LLAMAS A TU FUNCIÓN DE TABULACIÓN
+                ResultadoPD resultado = pd_tabulacion(arreglo, cantidad_actual, presupuesto, k_equipo);
+                clock_t fin = clock();
+                double tiempo = (double)(fin - ini) / CLOCKS_PER_SEC;
+
+                imprimir_resultado_pd(&resultado, arreglo, "Tabulacion (Bottom-Up)");
+                printf("Tiempo de ejecucion: %f segundos\n", tiempo);
+
+                liberar_resultado_pd(&resultado);
+                break;
+            }
+
+            case 11: {
                 if (cantidad_actual == 0) {
                     printf("No hay datos cargados.\n");
                     break;

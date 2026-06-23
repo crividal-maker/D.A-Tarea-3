@@ -25,8 +25,11 @@ typedef struct {
 // Retorna ResultadoPD con la solución óptima
 ResultadoPD pd_memoizacion(Deportista *arreglo, int n, int w, int k);
 
+// 
+ResultadoPD pd_tabulacion(Deportista *arreglo, int n, int w, int k);
+
 // Liberar memoria del resultado e imprimirla
 void liberar_resultado_pd(ResultadoPD *resultado);
-void imprimir_resultado_pd(ResultadoPD *resultado, Deportista *arreglo);
+void imprimir_resultado_pd(ResultadoPD *resultado, Deportista *arreglo, const char *metodo);
 
 #endif // PD_H
