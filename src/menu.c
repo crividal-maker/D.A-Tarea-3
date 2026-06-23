@@ -14,6 +14,8 @@ void mostrar_menu() {
     printf("9. Conformar equipo optimo (Programacion Dinamica - Memoizacion)\n");
     printf("10. Conformar equipo optimo (Programacion Dinamica - Tabulacion)\n");
     printf("11. Conformar equipo (Greedy - Menor costo primero)\n");
+    printf("12. Conformar equipo (Greedy - Mayor puntaje primero)\n");
+    printf("13. Conformar equipo (Greedy - Sin restriccion - K mejores)\n");
     printf("0. Salir\n");
     printf("\n\033[0;32m====================================\033[0m\n");
     printf("Seleccione una opcion: ");
