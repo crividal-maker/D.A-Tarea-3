@@ -11,6 +11,7 @@
 #include "medicion.h"
 #include "pd.h"
 #include "greedy.h"
+#include "medicion_pd.h"
 
 #define MAX_DEPORTISTAS 50
 #define CANTIDAD_GENERAR 50
@@ -502,6 +503,37 @@ int main() {
 
                 // Liberar la memoria del arreglo de índices que se reservó adentro de la función
                 liberar_resultado_greedy(&resultado);
+                break;
+            }
+
+            case 14: {
+                if (cantidad_actual == 0) {
+                    printf("No hay datos cargados.\n");
+                    break;
+                }
+                int presupuesto;
+                printf("Ingrese el presupuesto maximo (W): ");
+                scanf("%d", &presupuesto);
+
+                if (presupuesto <= 0) {
+                    printf("Presupuesto invalido.\n");
+                    break;
+                }
+
+                clock_t ini = clock();
+                ResultadoGreedy resultado = greedy_mayor_ratio(arreglo, cantidad_actual, presupuesto);
+                clock_t fin = clock();
+                double tiempo = (double)(fin - ini) / CLOCKS_PER_SEC;
+
+                imprimir_resultado_greedy(&resultado, arreglo, "Mayor ratio puntaje/costo");
+                printf("Tiempo de ejecucion: %f segundos\n", tiempo);
+
+                liberar_resultado_greedy(&resultado);
+                break;
+            }
+
+            case 15: {
+                medicion_pd_general();
                 break;
             }
             
