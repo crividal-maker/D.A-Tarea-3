@@ -16,6 +16,8 @@ void mostrar_menu() {
     printf("11. Conformar equipo (Greedy - Menor costo primero)\n");
     printf("12. Conformar equipo (Greedy - Mayor puntaje primero)\n");
     printf("13. Conformar equipo (Greedy - Sin restriccion - K mejores)\n");
+    printf("14. Conformar equipo (Greedy - Mayor ratio puntaje/costo)\n");
+    printf("15. Medicion automatica PD y Greedy\n");
     printf("0. Salir\n");
     printf("\n\033[0;32m====================================\033[0m\n");
     printf("Seleccione una opcion: ");
