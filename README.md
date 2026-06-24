@@ -1,5 +1,12 @@
 # Proyecto #3 de Algoritmos
 
+# **==Profesora==**
+- Jacqueline Aldridge Águila
+
+# **==Integrantes==**
+- Nicolás Álvarez (nalvarti@umag.cl)
+- Guillermo Vargas (guvargas@umag.cl)
+- Cristóbal Vidal (crividal@umag.cl)
 
 # **==Instrucciones para iniciar el proyecto==**
 
