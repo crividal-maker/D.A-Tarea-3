@@ -10,7 +10,7 @@
 #include "quicksort.h"
 #include "medicion.h"
 #include "pd.h"
-// #include "greedy.h" -> solo para comprobar de funcionamiento de Conformar equipo (Greedy - Mayor ratio puntaje/costo)
+#include "greedy.h"
 
 #define MAX_DEPORTISTAS 50
 #define CANTIDAD_GENERAR 50
@@ -386,20 +386,72 @@ int main() {
                 clock_t fin = clock();
                 double tiempo = (double)(fin - ini) / CLOCKS_PER_SEC;
 
-                imprimir_resultado_pd(&resultado, arreglo);
+                imprimir_resultado_pd(&resultado, arreglo, "Memoizacion (Top-Down)");
                 printf("Tiempo de ejecucion: %f segundos\n", tiempo);
 
                 liberar_resultado_pd(&resultado);
                 break;
             }
 
-            /* Comprobacion de funcionamiento de -> Conformar equipo (Greedy - Mayor ratio puntaje/costo)
             case 10: {
                 if (cantidad_actual == 0) {
                     printf("No hay datos cargados.\n");
                     break;
                 }
 
+                int presupuesto, k_equipo;
+                printf("Ingrese el presupuesto maximo (W): ");
+                scanf("%d", &presupuesto);
+                printf("Ingrese la cantidad exacta de deportistas (K): ");
+                scanf("%d", &k_equipo);
+
+                if (presupuesto <= 0 || k_equipo <= 0 || k_equipo > cantidad_actual) {
+                    printf("Parametros invalidos.\n");
+                    break;
+                }
+
+                printf("\n[!] Ejecutando PD Tabulacion (n=%d, W=%d, K=%d)...\n",
+                    cantidad_actual, presupuesto, k_equipo);
+
+                clock_t ini = clock();
+                
+                ResultadoPD resultado = pd_tabulacion(arreglo, cantidad_actual, presupuesto, k_equipo);
+                clock_t fin = clock();
+                double tiempo = (double)(fin - ini) / CLOCKS_PER_SEC;
+
+                imprimir_resultado_pd(&resultado, arreglo, "Tabulacion (Bottom-Up)");
+                printf("Tiempo de ejecucion: %f segundos\n", tiempo);
+
+                liberar_resultado_pd(&resultado);
+                break;
+            }
+
+            case 11: {
+                if (cantidad_actual == 0) {
+                    printf("No hay datos cargados.\n");
+                    break;
+                }
+                int presupuesto;
+                printf("Ingrese el presupuesto maximo (W): ");
+                scanf("%d", &presupuesto);
+
+                clock_t ini = clock();
+                ResultadoGreedy resultado = greedy_menor_costo(arreglo, cantidad_actual, presupuesto);
+                clock_t fin = clock();
+                double tiempo = (double)(fin - ini) / CLOCKS_PER_SEC;
+
+                imprimir_resultado_greedy(&resultado, arreglo, "Menor costo primero");
+                printf("Tiempo de ejecucion: %f segundos\n", tiempo);
+
+                liberar_resultado_greedy(&resultado);
+                break;
+            }
+
+            case 12: {
+                if (cantidad_actual == 0) {
+                    printf("No hay datos cargados.\n");
+                    break;
+                }
                 int presupuesto;
                 printf("Ingrese el presupuesto maximo (W): ");
                 scanf("%d", &presupuesto);
@@ -410,17 +462,48 @@ int main() {
                 }
 
                 clock_t ini = clock();
-                ResultadoGreedy resultado = greedy_mayor_ratio(arreglo, cantidad_actual, presupuesto);
+                ResultadoGreedy resultado = greedy_mayor_puntaje(arreglo, cantidad_actual, presupuesto);
                 clock_t fin = clock();
                 double tiempo = (double)(fin - ini) / CLOCKS_PER_SEC;
 
-                imprimir_resultado_greedy(&resultado, arreglo, "Mayor ratio puntaje/costo");
+                // Nota: Los indices de resultado apuntan a la 'copia' ordenada internamente
+                imprimir_resultado_greedy(&resultado, arreglo, "Mayor puntaje primero");
                 printf("Tiempo de ejecucion: %f segundos\n", tiempo);
 
                 liberar_resultado_greedy(&resultado);
                 break;
-            } 
-            */
+            }
+
+            case 13: {
+                if (cantidad_actual == 0) {
+                    printf("No hay datos cargados.\n");
+                    break;
+                }
+                
+                int k_mejores;
+                printf("Ingrese la cantidad exacta de deportistas a seleccionar (K): ");
+                scanf("%d", &k_mejores);
+
+                // Validación crítica: K no puede ser negativo ni mayor al total de deportistas
+                if (k_mejores <= 0 || k_mejores > cantidad_actual) {
+                    printf("Cantidad K invalida. Debe ser entre 1 y %d.\n", cantidad_actual);
+                    break;
+                }
+
+                // Medición de tiempos de ejecución
+                clock_t ini = clock();
+                ResultadoGreedy resultado = greedy_sin_restriccion(arreglo, cantidad_actual, k_mejores);
+                clock_t fin = clock();
+                double tiempo = (double)(fin - ini) / CLOCKS_PER_SEC;
+
+                // Mostrar el equipo óptimo en pantalla (usa tu función utilitaria)
+                imprimir_resultado_greedy(&resultado, arreglo, "Sin restriccion - K mejores");
+                printf("Tiempo de ejecucion: %f segundos\n", tiempo);
+
+                // Liberar la memoria del arreglo de índices que se reservó adentro de la función
+                liberar_resultado_greedy(&resultado);
+                break;
+            }
             
             case 0:
                 printf("Saliendo...\n");

@@ -74,14 +74,157 @@ ResultadoGreedy greedy_mayor_ratio(Deportista *arreglo, int n, int w) {
 // =====================================================================
 // MAYOR PUNTAJE PRIMERO (Guillermo)
 // =====================================================================
-//...
+
+// Función de comparación para qsort: ordena índices por PUNTAJE descendente
+static int comparar_por_puntaje(const void *a, const void *b) {
+    int idx_a = *(int *)a;
+    int idx_b = *(int *)b;
+    
+    // Accedemos al arreglo_global que ya está definido más arriba en tu archivo
+    if (arreglo_global[idx_a].puntaje < arreglo_global[idx_b].puntaje) return 1;
+    if (arreglo_global[idx_a].puntaje > arreglo_global[idx_b].puntaje) return -1;
+    
+    // Empate en puntaje -> desempata por el de MENOR costo
+    return arreglo_global[idx_a].costo - arreglo_global[idx_b].costo;
+}
+
+ResultadoGreedy greedy_mayor_puntaje(Deportista *arreglo, int n, int w) {
+    ResultadoGreedy resultado;
+    resultado.puntaje_total = 0.0f;
+    resultado.costo_total   = 0;
+    resultado.cantidad      = 0;
+    resultado.indices       = malloc(n * sizeof(int));
+
+    // Crear el arreglo de índices para no alterar el orden original del archivo CSV
+    int *orden = malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) {
+        orden[i] = i;
+    }
+
+    // Asignar el arreglo a la variable global y ordenar de mayor a menor puntaje
+    arreglo_global = arreglo;
+    qsort(orden, n, sizeof(int), comparar_por_puntaje);
+
+    // Selección voraz evaluando la restricción de presupuesto (W)
+    int presupuesto_restante = w;
+    for (int i = 0; i < n; i++) {
+        int idx = orden[i];
+        
+        // Si el deportista cabe en el presupuesto actual, se contrata
+        if (arreglo[idx].costo <= presupuesto_restante) {
+            resultado.indices[resultado.cantidad++] = idx;
+            resultado.puntaje_total += arreglo[idx].puntaje;
+            resultado.costo_total   += arreglo[idx].costo;
+            presupuesto_restante    -= arreglo[idx].costo;
+        }
+        // Si no entra por presupuesto, se salta (así funciona Greedy, avanza sin mirar atrás)
+    }
+
+    // Liberar la memoria del arreglo auxiliar de ordenación
+    free(orden);
+    return resultado;
+}
 
 // =====================================================================
 // MENOR COSTO PRIMERO (Cristóbal)
 // =====================================================================
-//...
+//
+// Idea: ordenar a todos los deportistas por costo ascendente y tomarlos
+// en ese orden mientras no se supere el presupuesto W.
+//
+// Esto maximiza la CANTIDAD de deportistas que entran al equipo, pero NO
+// necesariamente el puntaje total -> en el informe hay que mostrar un
+// contraejemplo donde este criterio NO es optimo (ej: tomar 3 baratos y
+// malos deja el mismo presupuesto que tomar 1 caro y muy bueno con mas
+// puntaje total).
+//
+// Complejidad:
+//   Tiempo:  O(n log n)  -> dominado por qsort
+//   Espacio: O(n)        -> arreglo auxiliar de indices para ordenar
+
+typedef struct {
+    int indice;
+    int costo;
+    float puntaje;
+} ItemAuxiliarCosto;
+
+static int comparar_por_costo(const void *a, const void *b) {
+    const ItemAuxiliarCosto *ia = (const ItemAuxiliarCosto *)a;
+    const ItemAuxiliarCosto *ib = (const ItemAuxiliarCosto *)b;
+
+    if (ia->costo != ib->costo) {
+        return ia->costo - ib->costo;
+    }
+    // Empate en costo -> desempata por mayor puntaje (no cambia el criterio,
+    // solo mejora la calidad de la solucion en caso de empate)
+    if (ia->puntaje < ib->puntaje) return 1;
+    if (ia->puntaje > ib->puntaje) return -1;
+    return 0;
+}
+
+ResultadoGreedy greedy_menor_costo(Deportista *arreglo, int n, int w) {
+    ResultadoGreedy resultado;
+    resultado.puntaje_total = 0.0f;
+    resultado.costo_total = 0;
+    resultado.cantidad = 0;
+    resultado.indices = malloc(n * sizeof(int));
+
+    ItemAuxiliarCosto *items = malloc(n * sizeof(ItemAuxiliarCosto));
+    for (int i = 0; i < n; i++) {
+        items[i].indice = i;
+        items[i].costo = arreglo[i].costo;
+        items[i].puntaje = arreglo[i].puntaje;
+    }
+
+    qsort(items, n, sizeof(ItemAuxiliarCosto), comparar_por_costo);
+
+    int presupuesto_restante = w;
+    for (int i = 0; i < n; i++) {
+        if (items[i].costo <= presupuesto_restante) {
+            int idx = items[i].indice;
+            resultado.indices[resultado.cantidad++] = idx;
+            resultado.puntaje_total += arreglo[idx].puntaje;
+            resultado.costo_total += arreglo[idx].costo;
+            presupuesto_restante -= items[i].costo;
+        }
+        // Si no entra, se descarta (greedy no vuelve atras)
+    }
+
+    free(items);
+    return resultado;
+}
 
 // =====================================================================
 // SIN RESTRICCIÓN: K MEJORES (Guillermo)
 // =====================================================================
-//...
+
+ResultadoGreedy greedy_sin_restriccion(Deportista *arreglo, int n, int k) {
+    ResultadoGreedy resultado;
+    resultado.puntaje_total = 0.0f;
+    resultado.costo_total   = 0;
+    resultado.cantidad      = 0;
+    resultado.indices       = malloc(k * sizeof(int)); // Solo necesitamos espacio para K
+
+    // 1. Crear el arreglo de índices para no alterar el archivo CSV original
+    int *orden = malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) {
+        orden[i] = i;
+    }
+
+    // 2. Usar la variable global y ordenar usando tu funcion 'comparar_por_puntaje'
+    arreglo_global = arreglo;
+    qsort(orden, n, sizeof(int), comparar_por_puntaje);
+
+    // 3. Tomar ciegamente los primeros K deportistas (los de mayor puntaje)
+    for (int i = 0; i < k; i++) {
+        int idx = orden[i];
+        resultado.indices[resultado.cantidad++] = idx;
+        resultado.puntaje_total += arreglo[idx].puntaje;
+        resultado.costo_total   += arreglo[idx].costo; // Se suma el costo solo de manera informativa
+    }
+
+    // 4. Liberar la memoria del arreglo auxiliar de ordenacion
+    free(orden);
+    
+    return resultado;
+}
