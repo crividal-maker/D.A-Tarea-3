@@ -7,6 +7,13 @@
 #include <time.h>
 #include <string.h>
 
+// Cantidad de repeticiones para promediar tiempos.
+// Los greedy terminan en microsegundos, por debajo de la resolucion real
+// de clock() (~1ms), asi que una sola corrida da puro ruido de medicion.
+// Repitiendo varias veces y promediando el tiempo total se elimina ese ruido.
+#define REPS_GREEDY 50
+#define REPS_PD 5  // la PD ya tarda decimas de segundo, no necesita tantas repeticiones
+
 // =====================================================================
 // FUNCIÓN AUXILIAR: genera arreglo de n deportistas aleatorios
 // =====================================================================
@@ -30,7 +37,12 @@ void medicion_pd_general() {
     printf("\n[!] Iniciando medicion experimental (W=%d, K=%d)...\n",
         W_FIJO, K_FIJO);
 
-    // Archivo de tiempos
+    // Semilla fija solo para esta medicion: asi los datos generados son
+    // siempre los mismos entre corridas y el informe (tablas, graficos y
+    // el contraejemplo de optimalidad) queda reproducible. Al terminar
+    // se vuelve a sembrar con time(NULL) para no afectar el resto del menu.
+    srand(42);
+
     FILE *f_tiempos = fopen("db/medicion_pd_tiempos.csv", "w");
     if (f_tiempos == NULL) {
         printf("Error al abrir archivo de tiempos.\n");
@@ -38,7 +50,6 @@ void medicion_pd_general() {
     }
     fprintf(f_tiempos, "n,pd_memo,pd_tabu,g_puntaje,g_costo,g_ratio,g_sinrestr\n");
 
-    // Archivo de calidad (puntaje obtenido)
     FILE *f_calidad = fopen("db/medicion_pd_calidad.csv", "w");
     if (f_calidad == NULL) {
         printf("Error al abrir archivo de calidad.\n");
@@ -58,7 +69,6 @@ void medicion_pd_general() {
         int n = TAMANIOS[t];
         printf("  Midiendo n=%d...\n", n);
 
-        // Generar datos
         Deportista *arreglo = malloc(n * sizeof(Deportista));
         if (arreglo == NULL) {
             printf("Error: no se pudo reservar memoria para n=%d.\n", n);
@@ -66,47 +76,71 @@ void medicion_pd_general() {
         }
         generar_arreglo_local(arreglo, n);
 
-        // ── PD Memoización ──────────────────────────────────────────
+        // ── PD Memoización (promedio de REPS_PD corridas) ────────────
+        ResultadoPD res_memo;
         clock_t ini = clock();
-        ResultadoPD res_memo = pd_memoizacion(arreglo, n, W_FIJO, K_FIJO);
+        for (int r = 0; r < REPS_PD; r++) {
+            if (r > 0) liberar_resultado_pd(&res_memo);
+            res_memo = pd_memoizacion(arreglo, n, W_FIJO, K_FIJO);
+        }
         clock_t fin = clock();
-        double t_memo = (double)(fin - ini) / CLOCKS_PER_SEC;
+        double t_memo = ((double)(fin - ini) / CLOCKS_PER_SEC) / REPS_PD;
 
-        // ── PD Tabulación ────────────────────────────────────────────
+        // ── PD Tabulación (promedio de REPS_PD corridas) ─────────────
+        ResultadoPD res_tabu;
         ini = clock();
-        ResultadoPD res_tabu = pd_tabulacion(arreglo, n, W_FIJO, K_FIJO);
+        for (int r = 0; r < REPS_PD; r++) {
+            if (r > 0) liberar_resultado_pd(&res_tabu);
+            res_tabu = pd_tabulacion(arreglo, n, W_FIJO, K_FIJO);
+        }
         fin = clock();
-        double t_tabu = (double)(fin - ini) / CLOCKS_PER_SEC;
+        double t_tabu = ((double)(fin - ini) / CLOCKS_PER_SEC) / REPS_PD;
 
-        // ── Greedy mayor puntaje ─────────────────────────────────────
+        // ── Greedy mayor puntaje (promedio de REPS_GREEDY corridas) ──
+        ResultadoGreedy res_g_puntaje;
         ini = clock();
-        ResultadoGreedy res_g_puntaje = greedy_mayor_puntaje(arreglo, n, W_FIJO);
+        for (int r = 0; r < REPS_GREEDY; r++) {
+            if (r > 0) liberar_resultado_greedy(&res_g_puntaje);
+            res_g_puntaje = greedy_mayor_puntaje(arreglo, n, W_FIJO);
+        }
         fin = clock();
-        double t_g_puntaje = (double)(fin - ini) / CLOCKS_PER_SEC;
+        double t_g_puntaje = ((double)(fin - ini) / CLOCKS_PER_SEC) / REPS_GREEDY;
 
-        // ── Greedy menor costo ───────────────────────────────────────
+        // ── Greedy menor costo (promedio de REPS_GREEDY corridas) ────
+        ResultadoGreedy res_g_costo;
         ini = clock();
-        ResultadoGreedy res_g_costo = greedy_menor_costo(arreglo, n, W_FIJO);
+        for (int r = 0; r < REPS_GREEDY; r++) {
+            if (r > 0) liberar_resultado_greedy(&res_g_costo);
+            res_g_costo = greedy_menor_costo(arreglo, n, W_FIJO);
+        }
         fin = clock();
-        double t_g_costo = (double)(fin - ini) / CLOCKS_PER_SEC;
+        double t_g_costo = ((double)(fin - ini) / CLOCKS_PER_SEC) / REPS_GREEDY;
 
-        // ── Greedy ratio ─────────────────────────────────────────────
+        // ── Greedy ratio (promedio de REPS_GREEDY corridas) ──────────
+        ResultadoGreedy res_g_ratio;
         ini = clock();
-        ResultadoGreedy res_g_ratio = greedy_mayor_ratio(arreglo, n, W_FIJO);
+        for (int r = 0; r < REPS_GREEDY; r++) {
+            if (r > 0) liberar_resultado_greedy(&res_g_ratio);
+            res_g_ratio = greedy_mayor_ratio(arreglo, n, W_FIJO);
+        }
         fin = clock();
-        double t_g_ratio = (double)(fin - ini) / CLOCKS_PER_SEC;
+        double t_g_ratio = ((double)(fin - ini) / CLOCKS_PER_SEC) / REPS_GREEDY;
 
-        // ── Greedy sin restricción ───────────────────────────────────
+        // ── Greedy sin restricción (promedio de REPS_GREEDY corridas) ─
+        ResultadoGreedy res_g_sinrestr;
         ini = clock();
-        ResultadoGreedy res_g_sinrestr = greedy_sin_restriccion(arreglo, n, K_FIJO);
+        for (int r = 0; r < REPS_GREEDY; r++) {
+            if (r > 0) liberar_resultado_greedy(&res_g_sinrestr);
+            res_g_sinrestr = greedy_sin_restriccion(arreglo, n, K_FIJO);
+        }
         fin = clock();
-        double t_g_sinrestr = (double)(fin - ini) / CLOCKS_PER_SEC;
+        double t_g_sinrestr = ((double)(fin - ini) / CLOCKS_PER_SEC) / REPS_GREEDY;
 
-        // Guardar tiempos
         fprintf(f_tiempos, "%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
                 n, t_memo, t_tabu, t_g_puntaje, t_g_costo, t_g_ratio, t_g_sinrestr);
 
-        // Guardar calidad (puntaje obtenido y cantidad seleccionada)
+        // La solucion no cambia entre repeticiones, por eso la calidad
+        // se guarda con los resultados de la ultima corrida de cada algoritmo
         fprintf(f_calidad, "%d,%.1f,%d,%.1f,%d,%.1f,%d,%.1f,%d,%.1f,%d,%.1f,%d\n",
                 n,
                 res_memo.factible     ? res_memo.puntaje_total     : 0.0f,
@@ -118,7 +152,6 @@ void medicion_pd_general() {
                 res_g_ratio.puntaje_total,   res_g_ratio.cantidad,
                 res_g_sinrestr.puntaje_total, res_g_sinrestr.cantidad);
 
-        // Liberar memoria
         liberar_resultado_pd(&res_memo);
         liberar_resultado_pd(&res_tabu);
         liberar_resultado_greedy(&res_g_puntaje);
@@ -131,7 +164,11 @@ void medicion_pd_general() {
     fclose(f_tiempos);
     fclose(f_calidad);
 
-    printf("[OK] Medicion completada.\n");
+    // Restaurar semilla aleatoria normal para el resto del programa
+    srand((unsigned int)time(NULL));
+
+    printf("[OK] Medicion completada (cada tiempo es el promedio de %d/%d corridas).\n",
+        REPS_GREEDY, REPS_PD);
     printf("     Tiempos: db/medicion_pd_tiempos.csv\n");
     printf("     Calidad: db/medicion_pd_calidad.csv\n");
 }
